@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @StateObject private var viewModel = LibraryViewModel()
+    @State private var isImporting = false
 
     var body: some View {
         NavigationStack {
@@ -56,6 +58,27 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Library")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        isImporting = true
+                    } label: {
+                        Label("Import", systemImage: "square.and.arrow.down")
+                    }
+                }
+            }
+            .fileImporter(
+                isPresented: $isImporting,
+                allowedContentTypes: [.audio, .folder],
+                allowsMultipleSelection: true
+            ) { result in
+                switch result {
+                case .success(let urls):
+                    viewModel.importResources(from: urls)
+                case .failure:
+                    break
+                }
+            }
         }
     }
 }
