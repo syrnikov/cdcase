@@ -14,6 +14,7 @@ final class LibraryViewModel: ObservableObject {
     @Published private(set) var albums: [Album] = []
 
     private let bookmarkStoreKey = "library.securityScopedBookmarks"
+    private let metadataReader = MetadataReader()
 
     init() {
         restoreLibraryFromBookmarks()
@@ -109,10 +110,13 @@ final class LibraryViewModel: ObservableObject {
         let audioFiles = collectAudioFiles(from: urls)
         let newTracks = audioFiles.map { fileURL in
             let fileName = fileURL.deletingPathExtension().lastPathComponent
+            let metadata = metadataReader.readMetadata(from: fileURL)
             return Track(
-                title: fileName,
-                artist: "Unknown Artist",
-                album: "Unknown Album",
+                title: metadata.title ?? fileName,
+                artist: metadata.artist ?? "Unknown Artist",
+                album: metadata.album ?? "Unknown Album",
+                trackNumber: metadata.trackNumber,
+                artwork: metadata.artwork,
                 fileURL: fileURL
             )
         }
